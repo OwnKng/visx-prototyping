@@ -1,6 +1,11 @@
 import React, { useEffect, useCallback, useRef, useMemo } from "react";
-import { scaleLinear, scaleLog, scaleOrdinal, scaleSqrt } from "@visx/scale";
-import { LegendOrdinal, LegendItem, LegendLabel } from "@visx/legend";
+import { scaleLinear, scaleLog, scaleOrdinal } from "@visx/scale";
+import {
+  LegendOrdinal,
+  LegendItem,
+  LegendLabel,
+  LegendSize,
+} from "@visx/legend";
 import { Group } from "@visx/group";
 import * as d3 from "d3";
 import { Circle } from "@visx/shape";
@@ -10,9 +15,13 @@ import { TooltipWithBounds, withTooltip, defaultStyles } from "@visx/tooltip";
 import { localPoint } from "@visx/event";
 import { voronoi } from "@visx/voronoi";
 import styled from "styled-components";
+import { fundamentals } from "./EconFundamentals";
+import { Text } from "@visx/text";
+import { lab } from "d3";
 
 const Graph = styled.div`
   background: #0f0e17;
+  color: #a7a9be;
 
   svg {
     text {
@@ -32,7 +41,6 @@ const tooltipStyles = {
 };
 
 export const ScatterPlot = ({
-  data,
   width,
   height,
   showTooltip,
@@ -43,6 +51,7 @@ export const ScatterPlot = ({
   tooltipLeft = 0,
   margin = { top: 30, left: 60, right: 40, bottom: 40 },
 }) => {
+  const data = fundamentals;
   // set the dimensions of the plot
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
@@ -74,7 +83,7 @@ export const ScatterPlot = ({
     range: ["#ff8906", "#f25f4c", "#e53170", "#7f5af0", "#2cb67d"],
   });
 
-  const rScale = scaleSqrt({
+  const rScale = scaleLinear({
     range: [3, 30],
     domain: d3.extent(data, radius),
   });
@@ -127,9 +136,21 @@ export const ScatterPlot = ({
     <Graph>
       <LegendOrdinal scale={fillScale} labelFormat={(label) => `${label}`}>
         {(labels) => (
-          <div style={{ display: "flex", justifyContent: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              position: "absolute",
+              right: "10%",
+              top: "60%",
+              border: "1px solid white",
+              borderRadius: "5px",
+              padding: "0.5rem",
+            }}
+          >
+            <div>Region</div>
             {labels.map((label, i) => (
-              <LegendItem key={`legend-quantile-${i}`} margin='0 10px'>
+              <LegendItem key={i} margin='0 10px'>
                 <svg width={legendGlyphSize} height={legendGlyphSize}>
                   <rect
                     fill={label.value}
@@ -149,6 +170,43 @@ export const ScatterPlot = ({
           </div>
         )}
       </LegendOrdinal>
+      <LegendSize scale={rScale}>
+        {(labels) => (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              position: "absolute",
+              right: "30%",
+              top: "60%",
+              border: "1px solid white",
+              borderRadius: "5px",
+              padding: "0.5rem",
+            }}
+          >
+            <div>Population</div>
+            {labels.map((label) => {
+              const size = rScale(label.datum) ?? 0;
+              return (
+                <LegendItem key={`legend-${label.text}-${label.index}`}>
+                  <svg width={size} height={size} style={{ margin: "5px 1px" }}>
+                    <circle
+                      fill='transparent'
+                      stroke='white'
+                      r={size / 3}
+                      cx={size / 3}
+                      cy={size / 3}
+                    />
+                  </svg>
+                  <LegendLabel align='left' margin='0 4px'>
+                    {d3.format(",.2r")(Math.ceil(label.text))}
+                  </LegendLabel>
+                </LegendItem>
+              );
+            })}
+          </div>
+        )}
+      </LegendSize>
       <svg width={width} height={height} ref={svgRef}>
         <rect
           width={width}
@@ -178,7 +236,7 @@ export const ScatterPlot = ({
         <AxisBottom
           scale={xScale}
           top={innerHeight + margin.top}
-          tickFormat={d3.format("~s")}
+          tickFormat={d3.format("$~s")}
           numTicks={2}
           tickStroke='#a7a9be'
           stroke='#a7a9be'
@@ -209,6 +267,63 @@ export const ScatterPlot = ({
             />
           ))}
         </Group>
+        <Text
+          x={width * 0.75}
+          width={width}
+          textAnchor='middle'
+          y={yScale(51)}
+          style={{ fontSize: "1.2rem" }}
+        >
+          Rich &rarr;
+        </Text>
+        <Text
+          x={width / 2}
+          width={width}
+          textAnchor='middle'
+          y={yScale(51)}
+          style={{ fontSize: "3rem" }}
+        >
+          INCOME
+        </Text>
+        <Text
+          x={width * 0.25}
+          width={width}
+          textAnchor='middle'
+          y={yScale(51)}
+          style={{ fontSize: "1.2rem" }}
+        >
+          &larr; Poor
+        </Text>
+        <Text
+          x={xScale(270)}
+          width={height}
+          textAnchor='middle'
+          angle={270}
+          y={height * 0.25}
+          style={{ fontSize: "1.2rem" }}
+        >
+          Healthy &rarr;
+        </Text>
+        <Text
+          x={xScale(270)}
+          width={height}
+          angle={270}
+          textAnchor='middle'
+          y={height / 2}
+          style={{ fontSize: "3rem" }}
+        >
+          HEALTH
+        </Text>
+        <Text
+          x={xScale(270)}
+          width={height}
+          textAnchor='middle'
+          angle={270}
+          y={height * 0.75}
+          style={{ fontSize: "1.2rem" }}
+        >
+          &larr; Sick
+        </Text>
       </svg>
       {tooltipOpen && tooltipData && tooltipLeft != null && tooltipTop != null && (
         <TooltipWithBounds

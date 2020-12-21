@@ -1,20 +1,23 @@
 // import LineChart from "./LineChart";
 import ParentSize from "@visx/responsive/lib/components/ParentSize";
-// import ScatterPlot from "./ScatterPlot";
-// import { fundamentals } from "./EconFundamentals";
+import ScatterPlot from "./ScatterPlot";
 import MultiLineChart from "./MultiLineChart";
+import "./App.css";
 
 const App = () => {
   return (
-    <div style={{ height: "90vh", width: "100vw" }}>
-      <>
-        <ParentSize>
-          {({ width, height }) => (
-            <MultiLineChart width={width} height={height} />
-          )}
-        </ParentSize>
-      </>
-    </div>
+    <>
+      <h1>Hello</h1>
+      <div style={{ height: "100vh", width: "100vw" }}>
+        <>
+          <ParentSize>
+            {({ width, height }) => (
+              <ScatterPlot width={width} height={height} />
+            )}
+          </ParentSize>
+        </>
+      </div>
+    </>
   );
 };
 
