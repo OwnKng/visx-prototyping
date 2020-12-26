@@ -1,23 +1,62 @@
-// import LineChart from "./LineChart";
-import ParentSize from "@visx/responsive/lib/components/ParentSize";
-import ScatterPlot from "./ScatterPlot";
-import MultiLineChart from "./MultiLineChart";
 import "./App.css";
+import { economicsData } from "./gdpPerCapLifeExp";
+import { group } from "d3";
+import ParentSize from "@visx/responsive/lib/components/ParentSize";
+import LineChart from "./LineChart";
+import styled from "styled-components";
+
+const StyledGrid = styled.div`
+  display: grid;
+  height: 600px;
+  width: 100%;
+  row-gap: 10px;
+  grid-template-columns: repeat(5, minmax(100px, 1fr));
+  grid-template-rows: repeat(2, minmax(100px, 1fr));
+
+  @media only screen and (max-width: 600px) {
+    grid-template-columns: repeat(2, minmax(100px, 1fr));
+    grid-template-rows: repeat(5, minmax(100px, 1fr));
+    height: 800px;
+  }
+`;
 
 const App = () => {
+  let data = economicsData;
+
+  const order = data
+    .filter((row) => row.year === 2019)
+    .sort((a, b) => a.gdpPerCap - b.gdpPerCap)
+    .map((row) => row.country);
+
+  data = data.sort(
+    (a, b) => order.indexOf(b.country) - order.indexOf(a.country)
+  );
+
+  const dataGrouped = Array.from(
+    group(data, (d) => d.country),
+    ([key, value]) => ({ key, value })
+  );
+
   return (
-    <>
-      <h1>Hello</h1>
-      <div style={{ height: "100vh", width: "100vw" }}>
-        <>
+    <div style={{ width: "100%" }}>
+      <StyledGrid>
+        {dataGrouped.map((data, i) => (
           <ParentSize>
             {({ width, height }) => (
-              <ScatterPlot width={width} height={height} />
+              <LineChart
+                index={i}
+                dataKey={data.key}
+                data={data.value}
+                width={width}
+                height={height}
+                x='year'
+                y='gdpPerCap'
+              />
             )}
           </ParentSize>
-        </>
-      </div>
-    </>
+        ))}
+      </StyledGrid>
+    </div>
   );
 };
 

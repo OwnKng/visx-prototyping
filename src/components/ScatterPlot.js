@@ -17,7 +17,6 @@ import { voronoi } from "@visx/voronoi";
 import styled from "styled-components";
 import { fundamentals } from "./EconFundamentals";
 import { Text } from "@visx/text";
-import { lab } from "d3";
 
 const Graph = styled.div`
   background: #0f0e17;
